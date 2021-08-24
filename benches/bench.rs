@@ -4,15 +4,29 @@ use std::sync::Arc;
 fn bench_script(c: &mut Criterion) {
     let mut group = c.benchmark_group("script");
     group.throughput(Throughput::Elements(1));
-    /*goup.bench_function("gluon_cold", |b| {
+    group.bench_function("gluon", |b| {
+        use gluon::ThreadExt;
         let vm = gluon::new_vm();
         let mut i = 0_u64;
+        vm.load_script("even", r#"
+            let int = import! std.int
+            let even n : Int -> Bool = 0 == int.bitand n 1
+            even
+            "#).unwrap();
+        let mut even: gluon::vm::api::FunctionRef<fn(u64) -> bool> = vm.get_global("even").unwrap();
+        even.call(0).unwrap();
         b.iter(|| {
-            //TODO: push i into VM?
-            vm.run_expr::<bool>("even", "(i & 1) == 0").unwrap()
+            let result = even.call(i).unwrap();
+            i += 1;
+            result
         })
     });
-    */
+    group.bench_function("deno_cold", |b| {
+        let mut runtime = deno_core::JsRuntime::new(Default::default());
+        b.iter(|| {
+            runtime.execute_script("test", "1 % 2 == 0")
+        })
+    });
     group.bench_function("rhai_cold", |b| {
         let engine = rhai::Engine::new();
         let mut scope = rhai::Scope::new();

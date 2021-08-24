@@ -12,6 +12,10 @@ rlua = "0.17.0"
 purua = "0.0.2"
 combine = "4.5.2"
 koto = "0.7.0"
+deno_core = "0.94.0"
+# gluon currently doesn't work on nightly (which I use) because the ArcType type is 40 instead of
+# 48 bytes. I patched it by commenting out base/type/mod.rs#1042.
+gluon = { path = "../gluon" }
 
 [dev-dependencies]
 criterion = "0.3.3"
